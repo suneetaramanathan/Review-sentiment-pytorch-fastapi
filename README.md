@@ -1,3 +1,5 @@
+ ![CI](https://github.com/suneetaramanathan/Review-sentiment-pytorch-fastapi/actions/workflows/ci.yml/badge.svg)
+   
 # Review Sentiment Classifier - PyTorch + FastAPI
 
 Fine-tuned **DistilBERT** for binary sentiment classification of customer reviews,
