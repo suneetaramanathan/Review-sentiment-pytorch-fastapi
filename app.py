@@ -1,22 +1,28 @@
+import os
 
 import torch
 from fastapi import FastAPI
 from pydantic import BaseModel
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-MODEL_DIR = "review_model"
+# Model folder can be overridden (e.g. in CI) via the MODEL_DIR environment variable
+MODEL_DIR = os.getenv("MODEL_DIR", "review_model")
+
 tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
 model.eval()
 
 app = FastAPI(title="Review Sentiment API")
 
+
 class Review(BaseModel):
     text: str
+
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 @app.post("/predict")
 def predict(review: Review):
@@ -24,5 +30,7 @@ def predict(review: Review):
     with torch.no_grad():
         probs = torch.softmax(model(**enc).logits, dim=1)[0]
     label = int(probs.argmax())
-    return {"sentiment": "positive" if label == 1 else "negative",
-            "confidence": round(float(probs[label]), 3)}
+    return {
+        "sentiment": "positive" if label == 1 else "negative",
+        "confidence": round(float(probs[label]), 3),
+    }
